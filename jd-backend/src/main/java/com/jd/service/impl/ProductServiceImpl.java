@@ -11,6 +11,7 @@ import com.jd.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,8 +26,24 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     public Page<Product> search(int current, int size, Long categoryId, String keyword,
                                 BigDecimal minPrice, BigDecimal maxPrice, String sortBy, String sortOrder) {
-        Page<Product> page = new Page<>(current, size);
-        Page<Product> result = baseMapper.searchProducts(page, categoryId, keyword, minPrice, maxPrice, sortBy, sortOrder);
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<Product>()
+                .eq(Product::getStatus, 1)
+                .eq(categoryId != null, Product::getCategoryId, categoryId)
+                .like(StringUtils.hasText(keyword), Product::getName, keyword)
+                .ge(minPrice != null, Product::getPrice, minPrice)
+                .le(maxPrice != null, Product::getPrice, maxPrice);
+
+        switch (sortBy == null ? "" : sortBy) {
+            case "sales"  -> wrapper.orderByDesc(Product::getSales);
+            case "rating" -> wrapper.orderByDesc(Product::getRating);
+            case "price"  -> {
+                if ("asc".equalsIgnoreCase(sortOrder)) wrapper.orderByAsc(Product::getPrice);
+                else wrapper.orderByDesc(Product::getPrice);
+            }
+            default -> wrapper.orderByDesc(Product::getCreatedAt);
+        }
+
+        Page<Product> result = page(new Page<>(current, size), wrapper);
         result.getRecords().forEach(this::parseImages);
         return result;
     }
@@ -34,9 +51,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     public Product getDetail(Long id) {
         Product product = baseMapper.findByIdWithCategory(id);
-        if (product != null) {
-            parseImages(product);
-        }
+        if (product != null) parseImages(product);
         return product;
     }
 

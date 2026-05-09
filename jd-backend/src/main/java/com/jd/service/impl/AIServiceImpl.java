@@ -150,7 +150,7 @@ public class AIServiceImpl implements AIService {
         if (message.contains("手机") || message.contains("iPhone") || message.contains("华为")) {
             return "您好！关于手机推荐，我们平台有丰富的选择。热门机型包括iPhone 15系列、华为Mate 60、小米14等。请问您的预算范围是多少？对拍照、游戏还是续航更看重？这样我可以为您精准推荐。";
         } else if (message.contains("退款") || message.contains("退货")) {
-            return "您好！关于退款退货，京东支持7天无理由退货。您可以在"我的订单"中申请退款，一般1-3个工作日处理完毕，退款会原路返回。如需人工协助，请联系我们的客服热线。";
+            return "您好！关于退款退货，京东支持7天无理由退货。您可以在【我的订单】中申请退款，一般1-3个工作日处理完毕，退款会原路返回。如需人工协助，请联系我们的客服热线。";
         } else if (message.contains("配送") || message.contains("快递") || message.contains("发货")) {
             return "您好！京东自营商品支持次日达，部分地区当日达。您可以在订单详情页查看物流信息。如有配送问题，请提供您的订单编号，我来帮您查询。";
         } else if (message.contains("优惠") || message.contains("活动") || message.contains("打折")) {
@@ -162,10 +162,10 @@ public class AIServiceImpl implements AIService {
 
     private String generateRecommendFallback(String query, List<Product> products) {
         if (products.isEmpty()) {
-            return "根据您的需求"" + query + ""，暂时未找到完全匹配的商品，建议您尝试调整搜索关键词或预算范围。";
+            return "根据您的需求【" + query + "】，暂时未找到完全匹配的商品，建议您尝试调整搜索关键词或预算范围。";
         }
         Product top = products.get(0);
-        return String.format("根据您的需求"%s"，为您精选了%d款商品。其中"%s"最受好评，评分高达%s分，销量%d件，性价比出色，值得考虑！",
+        return String.format("根据您的需求【%s】，为您精选了%d款商品。其中【%s】最受好评，评分高达%s分，销量%d件，性价比出色，值得考虑！",
                 query, products.size(), top.getName(), top.getRating(), top.getSales());
     }
 

@@ -1,0 +1,123 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --jd-red: #e1251b;
+  --jd-red-dark: #c0160d;
+  --jd-red-light: #ff4d4f;
+  --jd-orange: #ff6900;
+  --jd-gray: #f5f5f5;
+  --jd-text: #333;
+  --jd-text-light: #999;
+  --jd-border: #e5e5e5;
+  --jd-white: #fff;
+}
+
+body {
+  font-family: 'Microsoft YaHei', Arial, sans-serif;
+  color: var(--jd-text);
+  background: #f5f5f5;
+  line-height: 1.5;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.jd-btn-primary {
+  background-color: var(--jd-red);
+  border-color: var(--jd-red);
+  color: #fff;
+}
+.jd-btn-primary:hover {
+  background-color: var(--jd-red-dark);
+  border-color: var(--jd-red-dark);
+}
+
+.price-tag {
+  color: var(--jd-red);
+  font-weight: bold;
+}
+
+.price-tag .symbol {
+  font-size: 12px;
+}
+
+.price-tag .amount {
+  font-size: 20px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: var(--jd-red);
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Element Plus overrides */
+.el-button--primary {
+  --el-button-bg-color: var(--jd-red);
+  --el-button-border-color: var(--jd-red);
+  --el-button-hover-bg-color: var(--jd-red-dark);
+  --el-button-hover-border-color: var(--jd-red-dark);
+  --el-button-active-bg-color: var(--jd-red-dark);
+}
+
+.el-tabs__item.is-active {
+  color: var(--jd-red);
+}
+
+.el-tabs__active-bar {
+  background-color: var(--jd-red);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background-color: var(--jd-red);
+}
+
+.el-rate .el-rate__icon {
+  color: var(--jd-orange);
+}

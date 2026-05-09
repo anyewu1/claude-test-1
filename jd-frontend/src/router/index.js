@@ -1,0 +1,33 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
+
+const routes = [
+  { path: '/', component: () => import('@/views/HomeView.vue') },
+  { path: '/products', component: () => import('@/views/ProductListView.vue') },
+  { path: '/products/:id', component: () => import('@/views/ProductDetailView.vue') },
+  { path: '/search', component: () => import('@/views/ProductListView.vue') },
+  { path: '/cart', component: () => import('@/views/CartView.vue'), meta: { requiresAuth: true } },
+  { path: '/checkout', component: () => import('@/views/CheckoutView.vue'), meta: { requiresAuth: true } },
+  { path: '/orders', component: () => import('@/views/OrderListView.vue'), meta: { requiresAuth: true } },
+  { path: '/orders/:id', component: () => import('@/views/OrderDetailView.vue'), meta: { requiresAuth: true } },
+  { path: '/login', component: () => import('@/views/LoginView.vue') },
+  { path: '/register', component: () => import('@/views/RegisterView.vue') },
+  { path: '/profile', component: () => import('@/views/UserProfileView.vue'), meta: { requiresAuth: true } }
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+  scrollBehavior: () => ({ top: 0 })
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth) {
+    const userStore = useUserStore()
+    if (!userStore.isLoggedIn) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+  }
+})
+
+export default router

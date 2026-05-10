@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>✨ Your Surprise ✨</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #00000a;
+      overflow: hidden;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    canvas { position: fixed; top: 0; left: 0; }
+
+    #bg-canvas  { z-index: 1; }
+    #fx-canvas  { z-index: 2; }
+
+    /* ── ORB STAGE ─────────────────────────────────────────────── */
+    #stage {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 60px;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    #orb-wrap {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      width: 360px; height: 360px;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      animation: spin linear infinite;
+    }
+    .ring:nth-child(1) {
+      width: 220px; height: 220px;
+      border-color: rgba(167,139,250,.5) transparent rgba(167,139,250,.2) transparent;
+      animation-duration: 6s;
+    }
+    .ring:nth-child(2) {
+      width: 290px; height: 290px;
+      border-color: transparent rgba(244,114,182,.4) transparent rgba(244,114,182,.2);
+      animation-duration: 10s;
+      animation-direction: reverse;
+    }
+    .ring:nth-child(3) {
+      width: 360px; height: 360px;
+      border-color: rgba(52,211,153,.3) transparent rgba(52,211,153,.1) transparent;
+      animation-duration: 15s;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #orb {
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 32%,
+        #fff 0%, #e9d5ff 15%, #a78bfa 35%, #7c3aed 60%, #2e1065 100%);
+      box-shadow:
+        0 0 40px  #a78bfa,
+        0 0 80px  #7c3aed,
+        0 0 160px rgba(124,58,237,.55),
+        0 0 280px rgba(109,40,217,.25),
+        inset 0 -10px 30px rgba(0,0,0,.4);
+      animation: orb-breathe 3.2s ease-in-out infinite;
+      position: relative; z-index: 1;
+      cursor: pointer;
+    }
+
+    @keyframes orb-breathe {
+      0%,100% { transform: scale(1); box-shadow: 0 0 40px #a78bfa, 0 0 80px #7c3aed, 0 0 160px rgba(124,58,237,.55), 0 0 280px rgba(109,40,217,.25), inset 0 -10px 30px rgba(0,0,0,.4); }
+      50% { transform: scale(1.07); box-shadow: 0 0 55px #c4b5fd, 0 0 110px #a78bfa, 0 0 220px rgba(167,139,250,.65), 0 0 380px rgba(139,92,246,.3), inset 0 -10px 30px rgba(0,0,0,.4); }
+    }
+
+    #hint {
+      color: rgba(167,139,250,.85);
+      font-size: 1rem;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      animation: hint-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes hint-pulse {
+      0%,100% { opacity: .5; }
+      50% { opacity: 1; }
+    }
+
+    /* ── GLITCH ────────────────────────────────────────────────── */
+    #glitch-overlay {
+      position: fixed; inset: 0; z-index: 50;
+      pointer-events: none; opacity: 0;
+      background: white;
+      transition: opacity 0.05s;
+    }
+
+    /* ── REVEAL CARD ───────────────────────────────────────────── */
+    #reveal {
+      position: fixed; inset: 0; z-index: 30;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 1.2s ease 0.3s;
+    }
+    #reveal.show { opacity: 1; pointer-events: all; }
+
+    .card {
+      position: relative;
+      background: rgba(255,255,255,.04);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      border-radius: 28px;
+      padding: 50px 64px 54px;
+      text-align: center;
+      max-width: 580px; width: 90%;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:
+        0 30px 80px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.18),
+        0 0 60px rgba(167,139,250,.15);
+      transform: translateY(40px) scale(.95);
+      transition: transform 1.4s cubic-bezier(.34,1.56,.64,1) .6s;
+    }
+    #reveal.show .card { transform: translateY(0) scale(1); }
+
+    .card::before {
+      content: '';
+      position: absolute; inset: -1px;
+      border-radius: 28px;
+      background: linear-gradient(135deg,
+        rgba(167,139,250,.4) 0%,
+        rgba(244,114,182,.3) 33%,
+        rgba(52,211,153,.3) 66%,
+        rgba(251,191,36,.3) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      padding: 1px;
+      pointer-events: none;
+    }
+
+    .big-emoji {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: 18px;
+      animation: emoji-bounce 1.4s ease-in-out infinite;
+      line-height: 1;
+    }
+    @keyframes emoji-bounce {
+      0%,100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-14px) rotate(3deg); }
+    }
+
+    .headline {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #f9fafb 0%, #a78bfa 30%, #f472b6 60%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+      margin-bottom: 22px;
+    }
+
+    .body-text {
+      color: rgba(255,255,255,.72);
+      font-size: 1.08rem;
+      line-height: 1.9;
+    }
+
+    .divider {
+      width: 60px; height: 2px;
+      margin: 24px auto;
+      background: linear-gradient(90deg, #a78bfa, #f472b6, #34d399);
+      border-radius: 2px;
+    }
+
+    .tag-line {
+      color: rgba(167,139,250,.8);
+      font-size: .85rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 28px;
+    }
+
+    /* ── FLOATING EMOJI ─────────────────────────────────────────── */
+    .floater {
+      position: fixed;
+      bottom: -40px;
+      pointer-events: none;
+      z-index: 40;
+      animation: floater-rise linear forwards;
+      font-size: 1.6rem;
+    }
+    @keyframes floater-rise {
+      0%   { transform: translateY(0)   rotate(0deg) scale(1);    opacity: .9; }
+      80%  { opacity: .7; }
+      100% { transform: translateY(-110vh) rotate(720deg) scale(.6); opacity: 0; }
+    }
+
+    /* ── SCORE COUNTER (little sparkle count) ───────────────────── */
+    #counter {
+      position: fixed; bottom: 20px; right: 24px;
+      color: rgba(167,139,250,.5);
+      font-size: .75rem;
+      letter-spacing: 2px;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 1s ease 2s;
+    }
+    #counter.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="fx-canvas"></canvas>
+<div id="glitch-overlay"></div>
+
+<!-- ── ORB STAGE ─────────────────────────────────────── -->
+<div id="stage">
+  <div id="orb-wrap">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div id="orb"></div>
+  </div>
+  <p id="hint">Touch to discover</p>
+</div>
+
+<!-- ── REVEAL CARD ──────────────────────────────────── -->
+<div id="reveal">
+  <div class="card">
+    <span class="big-emoji">🎁</span>
+    <div class="headline">You Are the Universe's<br>Greatest Surprise</div>
+    <div class="divider"></div>
+    <p class="body-text">
+      In a cosmos of 200 billion galaxies,<br>
+      each holding 200 billion stars —<br>
+      <em>you</em> happened.<br><br>
+      That is the most extraordinary miracle<br>
+      of all time and space.
+    </p>
+    <p class="tag-line">✦ &nbsp; Keep shining &nbsp; ✦</p>
+  </div>
+</div>
+
+<div id="counter"></div>
+
+<script>
+(() => {
+  // ── CANVAS SETUP ───────────────────────────────────────────────
+  const bgC = document.getElementById('bg-canvas');
+  const bgX = bgC.getContext('2d');
+  const fxC = document.getElementById('fx-canvas');
+  const fxX = fxC.getContext('2d');
+
+  let W, H;
+  const resize = () => {
+    W = window.innerWidth; H = window.innerHeight;
+    bgC.width = fxC.width  = W;
+    bgC.height = fxC.height = H;
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── PALETTE ────────────────────────────────────────────────────
+  const COLORS = [
+    [167,139,250],[244,114,182],[52,211,153],
+    [251,191,36],[96,165,250],[248,113,113],
+    [192,132,252],[34,211,238],[251,146,60],[163,230,53],
+  ];
+  const rc = () => COLORS[Math.random() * COLORS.length | 0];
+  const rgba = ([r,g,b], a=1) => `rgba(${r},${g},${b},${a})`;
+
+  // ── STARS ──────────────────────────────────────────────────────
+  const STAR_COUNT = 380;
+  const stars = Array.from({length: STAR_COUNT}, () => ({
+    x: Math.random() * 4000,
+    y: Math.random() * 4000,
+    r: Math.pow(Math.random(), 2.5) * 2 + 0.2,
+    phase: Math.random() * Math.PI * 2,
+    speed: Math.random() * 0.03 + 0.005,
+    hue: [0,210,260,130,45][Math.random()*5|0],
+  }));
+
+  // ── NEBULA CLOUDS ─────────────────────────────────────────────
+  const nebula = [
+    {x:.18,y:.28,rx:320,ry:210,c:[120,40,220],phase:0,sp:.0006},
+    {x:.82,y:.72,rx:280,ry:190,c:[0,180,255],phase:1,sp:.0008},
+    {x:.5, y:.5, rx:450,ry:320,c:[140,0,200],phase:2,sp:.0004},
+    {x:.08,y:.82,rx:220,ry:160,c:[255,20,140],phase:3,sp:.001},
+    {x:.92,y:.18,rx:240,ry:170,c:[60,220,200],phase:4,sp:.0009},
+  ];
+
+  // ── AURORA ────────────────────────────────────────────────────
+  const auroraColors = [
+    ['#00ff87','#00d4ff'],
+    ['#a78bfa','#f472b6'],
+    ['#34d399','#60a5fa'],
+  ];
+
+  // ── BACKGROUND LOOP ───────────────────────────────────────────
+  let bgTime = 0;
+  const drawBg = () => {
+    bgTime++;
+    bgX.fillStyle = '#00000a';
+    bgX.fillRect(0, 0, W, H);
+
+    // Nebula
+    nebula.forEach(n => {
+      n.phase += n.sp;
+      bgX.save();
+      bgX.translate(n.x*W, n.y*H);
+      bgX.rotate(n.phase);
+      const g = bgX.createRadialGradient(0,0,0,0,0,Math.max(n.rx,n.ry));
+      g.addColorStop(0,  rgba(n.c,.09));
+      g.addColorStop(.5, rgba(n.c,.04));
+      g.addColorStop(1,  rgba(n.c,0));
+      bgX.scale(n.rx/Math.max(n.rx,n.ry), n.ry/Math.max(n.rx,n.ry));
+      bgX.fillStyle = g;
+      bgX.beginPath();
+      bgX.arc(0,0,Math.max(n.rx,n.ry),0,Math.PI*2);
+      bgX.fill();
+      bgX.restore();
+    });
+
+    // Aurora
+    auroraColors.forEach(([ca,cb], i) => {
+      const t = bgTime * 0.0005 + i;
+      bgX.save();
+      bgX.globalAlpha = 0.055 + i*0.018;
+      const lg = bgX.createLinearGradient(0, H*.05, 0, H*.55);
+      lg.addColorStop(0, 'transparent');
+      lg.addColorStop(.35, ca);
+      lg.addColorStop(.65, cb);
+      lg.addColorStop(1, 'transparent');
+      bgX.fillStyle = lg;
+      bgX.beginPath();
+      const segs = 10;
+      for (let j=0; j<=segs; j++) {
+        const x = (j/segs)*W;
+        const y = H*.2 + Math.sin(t*(1+i*.3)+j*.7+i)*70 + i*25;
+        j===0 ? bgX.moveTo(x,y) : bgX.lineTo(x,y);
+      }
+      bgX.lineTo(W, H*.05);
+      bgX.lineTo(0, H*.05);
+      bgX.closePath();
+      bgX.fill();
+      bgX.restore();
+    });
+
+    // Stars
+    const t = bgTime * 0.001;
+    stars.forEach(s => {
+      s.phase += s.speed;
+      const a = 0.3 + 0.7*(.5+.5*Math.sin(s.phase));
+      const sx = (s.x % W + W) % W;
+      const sy = (s.y % H + H) % H;
+      bgX.save();
+      bgX.globalAlpha = a;
+      bgX.shadowColor = `hsl(${s.hue},80%,85%)`;
+      bgX.shadowBlur = s.r * 5;
+      bgX.fillStyle = `hsl(${s.hue},60%,95%)`;
+      bgX.beginPath();
+      bgX.arc(sx, sy, s.r, 0, Math.PI*2);
+      bgX.fill();
+      bgX.restore();
+    });
+
+    requestAnimationFrame(drawBg);
+  };
+  drawBg();
+
+  // ── PARTICLE SYSTEM ───────────────────────────────────────────
+  const particles = [];
+  const confetti  = [];
+  const rockets   = [];
+
+  class Particle {
+    constructor(x, y, burst) {
+      this.x = x; this.y = y;
+      const a = Math.random()*Math.PI*2;
+      const sp = burst ? Math.random()*22+6 : Math.random()*3+1;
+      this.vx = Math.cos(a)*sp;
+      this.vy = Math.sin(a)*sp - (burst ? Math.random()*9 : 0);
+      this.col = rc();
+      this.life = 1;
+      this.decay = burst ? Math.random()*.018+.008 : Math.random()*.03+.015;
+      this.r = Math.random()*(burst?7:3)+2;
+      this.grav = burst ? 0.22 : 0.06;
+      this.trail = [];
+      this.trailLen = burst ? 14 : 6;
+      this.star = Math.random()>.65;
+      this.spin = (Math.random()-.5)*.4;
+      this.angle = Math.random()*Math.PI*2;
+    }
+    update() {
+      this.trail.push({x:this.x, y:this.y});
+      if (this.trail.length > this.trailLen) this.trail.shift();
+      this.vy += this.grav;
+      this.vx *= .989;
+      this.x  += this.vx;
+      this.y  += this.vy;
+      this.life -= this.decay;
+      this.angle += this.spin;
+    }
+    draw(ctx) {
+      // trail
+      this.trail.forEach((p, i) => {
+        const t = i/this.trail.length;
+        ctx.save();
+        ctx.globalAlpha = t * this.life * .35;
+        ctx.shadowColor = rgba(this.col);
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = rgba(this.col);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, this.r*t*.6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      });
+      // body
+      ctx.save();
+      ctx.globalAlpha = this.life;
+      ctx.shadowColor = rgba(this.col);
+      ctx.shadowBlur = 22;
+      ctx.fillStyle = rgba(this.col);
+      if (this.star) {
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        for (let i=0; i<8; i++) {
+          const a = (i/8)*Math.PI*2;
+          const r2 = i%2===0 ? this.r : this.r*.4;
+          i===0 ? ctx.moveTo(Math.cos(a)*r2, Math.sin(a)*r2)
+                : ctx.lineTo(Math.cos(a)*r2, Math.sin(a)*r2);
+        }
+        ctx.closePath();
+      } else {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+      }
+      ctx.fill();
+      ctx.restore();
+    }
+    dead() { return this.life <= 0; }
+  }
+
+  class Confetti {
+    constructor(launched) {
+      this.x = Math.random()*W;
+      this.y = launched ? -20 : Math.random()*H*.4;
+      this.w = Math.random()*14+5;
+      this.h = Math.random()*6+3;
+      this.vx = (Math.random()-.5)*4;
+      this.vy = Math.random()*4+2;
+      this.spin = (Math.random()-.5)*.25;
+      this.angle = Math.random()*Math.PI*2;
+      this.col = rc();
+      this.wob = Math.random()*Math.PI*2;
+      this.wobSp = Math.random()*.12+.04;
+    }
+    update() {
+      this.wob += this.wobSp;
+      this.x += this.vx + Math.sin(this.wob)*2;
+      this.y += this.vy;
+      this.angle += this.spin;
+      if (this.y > H+30) {
+        this.y = -20;
+        this.x = Math.random()*W;
+      }
+    }
+    draw(ctx) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+      ctx.globalAlpha = .88;
+      ctx.shadowColor = rgba(this.col);
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = rgba(this.col);
+      ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
+      ctx.restore();
+    }
+  }
+
+  class Rocket {
+    constructor() {
+      this.x = W*.1 + Math.random()*W*.8;
+      this.y = H;
+      this.vy = -(Math.random()*10+10);
+      this.ty = H*.08 + Math.random()*H*.45;
+      this.col = rc();
+      this.trail = [];
+      this.done = false;
+    }
+    update() {
+      if (this.done) return;
+      this.trail.push({x:this.x, y:this.y});
+      if (this.trail.length > 9) this.trail.shift();
+      this.y += this.vy;
+      if (this.y <= this.ty) { this.done = true; this.burst(); }
+    }
+    burst() {
+      const n = 80 + Math.random()*40|0;
+      for (let i=0; i<n; i++) particles.push(new Particle(this.x, this.y, true));
+    }
+    draw(ctx) {
+      if (this.done) return;
+      this.trail.forEach((p,i) => {
+        const t = i/this.trail.length;
+        ctx.save();
+        ctx.globalAlpha = t*.9;
+        ctx.shadowColor = rgba(this.col);
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = rgba(this.col);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.5*t, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+  }
+
+  // ── FX LOOP ───────────────────────────────────────────────────
+  const drawFx = () => {
+    fxX.clearRect(0, 0, W, H);
+
+    rockets.forEach(r => { r.update(); r.draw(fxX); });
+    for (let i=particles.length-1; i>=0; i--) {
+      particles[i].update(); particles[i].draw(fxX);
+      if (particles[i].dead()) particles.splice(i,1);
+    }
+    confetti.forEach(c => { c.update(); c.draw(fxX); });
+
+    requestAnimationFrame(drawFx);
+  };
+  drawFx();
+
+  // ── SHOCKWAVE RING ────────────────────────────────────────────
+  const shockwaveStyle = document.createElement('style');
+  shockwaveStyle.textContent = `
+    @keyframes sw{0%{transform:translate(-50%,-50%) scale(1);opacity:.9}
+    100%{transform:translate(-50%,-50%) scale(55);opacity:0}}
+    .sw{position:fixed;border-radius:50%;pointer-events:none;z-index:45;
+    animation:sw .9s ease-out forwards;}
+  `;
+  document.head.appendChild(shockwaveStyle);
+
+  const spawnShockwave = (cx, cy, color, delay=0) => {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.className = 'sw';
+      d.style.cssText = `left:${cx}px;top:${cy}px;width:12px;height:12px;
+        border:3px solid rgba(${color},.85);animation-delay:0s;`;
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 950);
+    }, delay);
+  };
+
+  // ── GLITCH EFFECT ─────────────────────────────────────────────
+  const glitch = document.getElementById('glitch-overlay');
+  const doGlitch = () => {
+    const flashes = [0, 60, 110, 150, 180, 210, 250, 280];
+    flashes.forEach((t, i) => {
+      setTimeout(() => {
+        glitch.style.opacity = i%2===0 ? '0.6' : '0';
+        glitch.style.background = ['white','#a78bfa','white','#f472b6','white','#34d399','white','transparent'][i];
+      }, t);
+    });
+  };
+
+  // ── FLOAT EMOJIS ──────────────────────────────────────────────
+  const floatSymbols = ['✨','🌟','💫','⭐','🎉','🎊','💎','🦋','🌸','💖','🚀','🌈','🔮','🪄','🌺','❄️'];
+  let floatInterval = null;
+  const startFloaters = () => {
+    floatInterval = setInterval(() => {
+      const el = document.createElement('div');
+      el.className = 'floater';
+      el.textContent = floatSymbols[Math.random()*floatSymbols.length|0];
+      el.style.left   = Math.random()*96 + 'vw';
+      el.style.fontSize = (Math.random()*1.4+.9)+'rem';
+      el.style.animationDuration = (Math.random()*4+4)+'s';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 8500);
+    }, 350);
+  };
+
+  // ── ROCKET SPAWN ──────────────────────────────────────────────
+  let rocketInterval = null;
+  const startRockets = () => {
+    rocketInterval = setInterval(() => {
+      rockets.push(new Rocket());
+    }, 900);
+  };
+
+  // ── TRIGGER ───────────────────────────────────────────────────
+  let triggered = false;
+
+  const trigger = () => {
+    if (triggered) return;
+    triggered = true;
+
+    const stage  = document.getElementById('stage');
+    const orb    = document.getElementById('orb');
+    const orbR   = orb.getBoundingClientRect();
+    const cx     = orbR.left + orbR.width/2;
+    const cy     = orbR.top  + orbR.height/2;
+
+    // Glitch flash
+    doGlitch();
+
+    // Hide orb stage
+    stage.style.transform = 'scale(3)';
+    stage.style.opacity   = '0';
+
+    // Shockwaves
+    [0,80,150,220,290].forEach((d,i) => {
+      const c = COLORS[(i*2)%COLORS.length];
+      spawnShockwave(cx, cy, c.join(','), d);
+    });
+
+    // Burst particles
+    for (let i=0; i<240; i++) particles.push(new Particle(cx, cy, true));
+
+    // Confetti rain
+    for (let i=0; i<180; i++) confetti.push(new Confetti(false));
+
+    // Rocket barrage
+    for (let i=0; i<5; i++) setTimeout(()=>rockets.push(new Rocket()), i*250);
+    startRockets();
+
+    // Reveal card
+    setTimeout(() => {
+      const rev = document.getElementById('reveal');
+      rev.classList.add('show');
+
+      // Counter
+      const ctr = document.getElementById('counter');
+      ctr.classList.add('show');
+      let sparks = 0;
+      setInterval(() => {
+        sparks += Math.random()*3+1|0;
+        ctr.textContent = `✦ ${sparks.toLocaleString()} sparks`;
+      }, 600);
+
+      startFloaters();
+    }, 1400);
+  };
+
+  // ── INPUT ─────────────────────────────────────────────────────
+  document.addEventListener('click', trigger);
+  document.addEventListener('touchstart', trigger, {passive:true});
+
+  // Parallax on mouse move (orb stage only)
+  const orbWrap = document.getElementById('orb-wrap');
+  document.addEventListener('mousemove', e => {
+    if (triggered) return;
+    const dx = (e.clientX - W/2) / W;
+    const dy = (e.clientY - H/2) / H;
+    orbWrap.style.transform = `translate(${dx*28}px, ${dy*28}px)`;
+  });
+
+  // Click again (after reveal) → extra fireworks
+  document.getElementById('reveal').addEventListener('click', () => {
+    for (let i=0; i<3; i++) setTimeout(()=>rockets.push(new Rocket()), i*180);
+    for (let i=0; i<80; i++) particles.push(new Particle(
+      W*.1+Math.random()*W*.8, H*.2+Math.random()*H*.5, true));
+  });
+})();
+</script>
+</body>
+</html>

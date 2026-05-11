@@ -20,9 +20,9 @@ CREATE TABLE users (
     avatar VARCHAR(500) DEFAULT 'https://picsum.photos/seed/avatar/100/100',
     role VARCHAR(20) DEFAULT 'USER',
     deleted INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE categories (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -30,7 +30,7 @@ CREATE TABLE categories (
     icon VARCHAR(200),
     parent_id BIGINT DEFAULT 0,
     sort_order INT DEFAULT 0
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE products (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -45,11 +45,13 @@ CREATE TABLE products (
     cover_image VARCHAR(500),
     rating DECIMAL(3,1) DEFAULT 5.0,
     rating_count INT DEFAULT 0,
-    is_flash_sale BOOLEAN DEFAULT FALSE,
+    is_flash_sale TINYINT(1) DEFAULT 0,
     status INT DEFAULT 1,
     deleted INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_category (category_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE addresses (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -60,17 +62,19 @@ CREATE TABLE addresses (
     city VARCHAR(50),
     district VARCHAR(50),
     detail VARCHAR(200),
-    is_default BOOLEAN DEFAULT FALSE
-);
+    is_default TINYINT(1) DEFAULT 0,
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE cart_items (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
     quantity INT DEFAULT 1,
-    selected BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    selected TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE orders (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -82,11 +86,13 @@ CREATE TABLE orders (
     address_id BIGINT,
     address_snapshot VARCHAR(1000),
     remark VARCHAR(200),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    paid_at TIMESTAMP,
-    shipped_at TIMESTAMP,
-    completed_at TIMESTAMP
-);
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    paid_at TIMESTAMP NULL DEFAULT NULL,
+    shipped_at TIMESTAMP NULL DEFAULT NULL,
+    completed_at TIMESTAMP NULL DEFAULT NULL,
+    INDEX idx_user_status (user_id, status),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE order_items (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -95,8 +101,9 @@ CREATE TABLE order_items (
     product_name VARCHAR(200),
     product_image VARCHAR(500),
     price DECIMAL(10,2),
-    quantity INT
-);
+    quantity INT,
+    INDEX idx_order (order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE reviews (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -104,16 +111,17 @@ CREATE TABLE reviews (
     user_id BIGINT NOT NULL,
     rating INT NOT NULL,
     content VARCHAR(1000),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE favorites (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_user_product UNIQUE (user_id, product_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE coupons (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -123,21 +131,22 @@ CREATE TABLE coupons (
     min_order DECIMAL(10,2) DEFAULT 0,
     max_uses INT DEFAULT 100,
     used_count INT DEFAULT 0,
-    valid_from TIMESTAMP,
-    valid_to TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    valid_from TIMESTAMP NULL DEFAULT NULL,
+    valid_to TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE browse_history (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
-    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    viewed_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_viewed (user_id, viewed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE product_embeddings (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     product_id BIGINT NOT NULL UNIQUE,
-    embedding TEXT NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    embedding MEDIUMTEXT NOT NULL,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -34,8 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/ai/chat",
                         "/api/ai/recommend",
                         "/api/ai/semantic-search",
-                        "/api/ai/embedding-status",
-                        "/h2-console/**"
+                        "/api/ai/embedding-status"
                 );
     }
 

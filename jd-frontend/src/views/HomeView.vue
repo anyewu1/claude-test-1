@@ -105,6 +105,23 @@
           </div>
         </div>
       </section>
+
+      <!-- Recently Viewed -->
+      <section class="recently-section" v-if="recentProducts.length">
+        <div class="section-title">👁 最近浏览</div>
+        <div class="recent-grid">
+          <div
+            class="recent-item card"
+            v-for="item in recentProducts"
+            :key="item.id"
+            @click="$router.push(`/products/${item.productId}`)"
+          >
+            <img :src="item.coverImage" :alt="item.productName" class="recent-img" />
+            <div class="recent-name">{{ item.productName }}</div>
+            <div class="recent-price">¥{{ item.price }}</div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -114,6 +131,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import ProductCard from '@/components/ProductCard.vue'
 import { productApi } from '@/api/product'
 import { aiApi } from '@/api/ai'
+import { historyApi } from '@/api/history'
+import { useUserStore } from '@/stores/userStore'
 
 const banners = [
   {
@@ -154,6 +173,9 @@ const aiBudget = ref(null)
 const aiLoading = ref(false)
 const aiResult = ref({ analysis: '', products: [] })
 
+const recentProducts = ref([])
+const userStore = useUserStore()
+
 onMounted(async () => {
   try {
     const [catsRes, flashRes] = await Promise.all([
@@ -180,6 +202,10 @@ onMounted(async () => {
         loadingMap.value[s.id] = false
       }
     })
+    // Load recently viewed for logged-in users
+    if (userStore.isLoggedIn) {
+      historyApi.recent(8).then(res => { recentProducts.value = res.data }).catch(() => {})
+    }
   } catch (e) {
     console.error(e)
   }
@@ -406,5 +432,53 @@ async function getAIRecommend() {
   color: #666;
   line-height: 1.6;
   margin-bottom: 16px;
+}
+
+.recently-section {
+  margin-bottom: 30px;
+}
+
+.recent-grid {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.recent-item {
+  min-width: 120px;
+  cursor: pointer;
+  padding: 10px;
+  text-align: center;
+  transition: box-shadow 0.2s;
+  border-radius: 8px;
+}
+
+.recent-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+.recent-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.recent-name {
+  font-size: 12px;
+  color: #333;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.recent-price {
+  font-size: 13px;
+  color: var(--jd-red);
+  font-weight: bold;
 }
 </style>

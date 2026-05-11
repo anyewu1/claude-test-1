@@ -8,4 +8,5 @@ public class CreateOrderRequest {
     private Long addressId;
     private List<Long> cartItemIds;
     private String remark;
+    private String couponCode;
 }

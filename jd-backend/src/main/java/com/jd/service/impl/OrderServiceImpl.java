@@ -11,6 +11,7 @@ import com.jd.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private final CartService cartService;
     private final ProductService productService;
     private final AddressService addressService;
+    private final CouponService couponService;
     private final OrderItemMapper orderItemMapper;
 
     @Override
@@ -72,12 +74,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             productService.updateById(product);
         }
 
+        // Apply coupon
+        BigDecimal actualAmount = totalAmount;
+        Coupon coupon = null;
+        if (StringUtils.hasText(req.getCouponCode())) {
+            coupon = couponService.validate(req.getCouponCode(), totalAmount);
+            actualAmount = couponService.applyDiscount(coupon, totalAmount);
+        }
+
         Order order = new Order();
         order.setOrderNo(generateOrderNo());
         order.setUserId(userId);
         order.setStatus(0);
         order.setTotalAmount(totalAmount);
-        order.setActualAmount(totalAmount);
+        order.setActualAmount(actualAmount);
         order.setAddressId(req.getAddressId());
         order.setAddressSnapshot(address.toSnapshot());
         order.setRemark(req.getRemark());
@@ -89,6 +99,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         cartService.removeByIds(req.getCartItemIds());
+        if (coupon != null) couponService.markUsed(coupon.getId());
         order.setItems(orderItems);
         return order;
     }
@@ -98,9 +109,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<Order>()
                 .eq(Order::getUserId, userId)
                 .orderByDesc(Order::getCreatedAt);
-        if (status != null) {
-            wrapper.eq(Order::getStatus, status);
+        if (status != null) wrapper.eq(Order::getStatus, status);
+        Page<Order> page = this.page(new Page<>(current, size), wrapper);
+        for (Order order : page.getRecords()) {
+            order.setItems(orderItemMapper.findByOrderId(order.getId()));
         }
+        return page;
+    }
+
+    @Override
+    public Page<Order> getAllOrders(Integer status, int current, int size) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<Order>()
+                .orderByDesc(Order::getCreatedAt);
+        if (status != null) wrapper.eq(Order::getStatus, status);
         Page<Order> page = this.page(new Page<>(current, size), wrapper);
         for (Order order : page.getRecords()) {
             order.setItems(orderItemMapper.findByOrderId(order.getId()));
@@ -149,6 +170,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (order.getStatus() != 1 && order.getStatus() != 2) throw new RuntimeException("订单状态不正确");
         order.setStatus(3);
         order.setCompletedAt(LocalDateTime.now());
+        updateById(order);
+    }
+
+    @Override
+    public void shipOrder(Long orderId) {
+        Order order = getById(orderId);
+        if (order == null) throw new RuntimeException("订单不存在");
+        if (order.getStatus() != 1) throw new RuntimeException("只有待发货订单可以发货");
+        order.setStatus(2);
+        order.setShippedAt(LocalDateTime.now());
+        updateById(order);
+    }
+
+    @Override
+    public void refundOrder(Long userId, Long orderId) {
+        Order order = getOrderDetail(userId, orderId);
+        if (order.getStatus() != 3) throw new RuntimeException("只有已完成订单可以申请退款");
+        order.setStatus(5);
         updateById(order);
     }
 

@@ -8,7 +8,9 @@
           <template v-if="userStore.isLoggedIn">
             <span class="top-text">{{ userStore.username }}</span>
             <RouterLink to="/orders">我的订单</RouterLink>
+            <RouterLink to="/favorites">我的收藏</RouterLink>
             <RouterLink to="/profile">会员中心</RouterLink>
+            <RouterLink v-if="userStore.isAdmin" to="/admin" class="admin-link">管理后台</RouterLink>
             <a href="#" @click.prevent="handleLogout">退出</a>
           </template>
           <template v-else>
@@ -206,6 +208,11 @@ function handleLogout() {
 
 .top-actions a:hover {
   color: var(--jd-red);
+}
+
+.admin-link {
+  color: var(--jd-red) !important;
+  font-weight: bold;
 }
 
 .header-main {

@@ -28,6 +28,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
         UserContext.setUserId(jwtUtil.getUserId(token));
+        UserContext.setRole(jwtUtil.getRole(token));
         return true;
     }
 

@@ -50,4 +50,10 @@ public class OrderController {
         orderService.confirmOrder(UserContext.getUserId(), id);
         return Result.success("确认收货成功", null);
     }
+
+    @PutMapping("/{id}/refund")
+    public Result<?> refund(@PathVariable Long id) {
+        orderService.refundOrder(UserContext.getUserId(), id);
+        return Result.success("退款申请已提交", null);
+    }
 }

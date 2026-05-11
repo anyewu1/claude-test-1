@@ -96,3 +96,11 @@ INSERT INTO reviews (product_id, user_id, rating, content) VALUES
 (3, 2, 5, '苹果Watch Ultra太棒了，续航比普通Watch强多了，很值！'),
 (4, 1, 5, 'AirPods Pro降噪效果绝了，通勤必备，强烈推荐！'),
 (5, 2, 4, 'MacBook Air M3性能超强，轻薄便携，就是价格贵一点。');
+
+-- Sample coupons
+INSERT INTO coupons (code, type, value, min_order, max_uses) VALUES
+('WELCOME10', 'FIXED', 10.00, 50.00, 1000),
+('SAVE20', 'FIXED', 20.00, 100.00, 500),
+('SAVE50', 'FIXED', 50.00, 300.00, 200),
+('DISCOUNT9', 'PERCENT', 10.00, 0.00, 1000),
+('VIP8', 'PERCENT', 20.00, 500.00, 100);

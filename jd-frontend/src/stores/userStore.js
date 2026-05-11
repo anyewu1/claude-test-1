@@ -10,6 +10,7 @@ export const useUserStore = defineStore('user', () => {
   const isLoggedIn = computed(() => !!token.value)
   const username = computed(() => userInfo.value?.username || '')
   const avatar = computed(() => userInfo.value?.avatar || '')
+  const isAdmin = computed(() => userInfo.value?.role === 'ADMIN')
 
   async function login(data) {
     const res = await authApi.login(data)
@@ -44,5 +45,5 @@ export const useUserStore = defineStore('user', () => {
     localStorage.setItem('jd_user', JSON.stringify(userInfo.value))
   }
 
-  return { token, userInfo, isLoggedIn, username, avatar, login, register, logout, fetchProfile }
+  return { token, userInfo, isLoggedIn, isAdmin, username, avatar, login, register, logout, fetchProfile }
 })

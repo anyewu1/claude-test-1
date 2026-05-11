@@ -76,14 +76,23 @@
           <span>运费</span>
           <span class="free-ship">免运费</span>
         </div>
+        <!-- Coupon input -->
+        <div class="coupon-row">
+          <el-input v-model="couponCode" placeholder="输入优惠码" size="small" style="flex:1" clearable @clear="clearCoupon" />
+          <el-button size="small" @click="applyCoupon" :loading="applyingCoupon">使用</el-button>
+        </div>
+        <div v-if="couponInfo" class="coupon-applied">
+          <el-tag type="success" size="small">{{ couponInfo.coupon.code }}</el-tag>
+          <span class="discount-amount">-¥{{ couponDiscount.toFixed(2) }}</span>
+        </div>
         <div class="summary-row discount-row">
           <span>优惠</span>
-          <span>-¥0.00</span>
+          <span class="discount-text">-¥{{ couponDiscount.toFixed(2) }}</span>
         </div>
         <el-divider />
         <div class="total-row">
           <span>应付合计</span>
-          <span class="final-price">¥{{ totalAmount.toFixed(2) }}</span>
+          <span class="final-price">¥{{ actualAmount.toFixed(2) }}</span>
         </div>
         <div class="address-tip" v-if="selectedAddress">
           配送至：{{ selectedAddress.province }}{{ selectedAddress.city }}{{ selectedAddress.district }}
@@ -140,6 +149,7 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cartStore'
 import { addressApi } from '@/api/address'
 import { orderApi } from '@/api/order'
+import { couponApi } from '@/api/coupon'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -152,8 +162,14 @@ const submitting = ref(false)
 const showAddressDialog = ref(false)
 const newAddress = ref({ name: '', phone: '', province: '', city: '', district: '', detail: '', isDefault: false })
 
+const couponCode = ref('')
+const couponInfo = ref(null)
+const applyingCoupon = ref(false)
+
 const selectedItems = computed(() => cartStore.items.filter(i => i.selected))
 const totalAmount = computed(() => cartStore.totalAmount)
+const couponDiscount = computed(() => couponInfo.value ? parseFloat(couponInfo.value.discount) : 0)
+const actualAmount = computed(() => Math.max(0, totalAmount.value - couponDiscount.value))
 const selectedAddress = computed(() => addresses.value.find(a => a.id === selectedAddressId.value))
 
 onMounted(async () => {
@@ -183,6 +199,24 @@ async function addAddress() {
   ElMessage.success('地址添加成功')
 }
 
+async function applyCoupon() {
+  if (!couponCode.value.trim()) return
+  applyingCoupon.value = true
+  try {
+    const res = await couponApi.validate(couponCode.value.trim(), totalAmount.value)
+    couponInfo.value = res.data
+    ElMessage.success(`优惠券已应用，优惠 ¥${parseFloat(res.data.discount).toFixed(2)}`)
+  } catch (e) {
+    couponInfo.value = null
+    ElMessage.error(e.message || '优惠券无效')
+  } finally { applyingCoupon.value = false }
+}
+
+function clearCoupon() {
+  couponCode.value = ''
+  couponInfo.value = null
+}
+
 async function submitOrder() {
   if (!selectedAddressId.value) {
     ElMessage.warning('请选择收货地址')
@@ -191,7 +225,12 @@ async function submitOrder() {
   submitting.value = true
   try {
     const cartItemIds = selectedItems.value.map(i => i.id)
-    const res = await orderApi.create({ addressId: selectedAddressId.value, cartItemIds, remark: remark.value })
+    const res = await orderApi.create({
+      addressId: selectedAddressId.value,
+      cartItemIds,
+      remark: remark.value,
+      couponCode: couponInfo.value ? couponCode.value.trim() : undefined
+    })
     ElMessage.success('下单成功！')
     await cartStore.fetchCart()
     router.push(`/orders/${res.data.id}`)
@@ -346,6 +385,26 @@ async function submitOrder() {
 .free-ship {
   color: var(--jd-red);
 }
+
+.coupon-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.coupon-applied {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.discount-amount {
+  font-size: 13px;
+  color: var(--jd-red);
+}
+
+.discount-text { color: var(--jd-red); }
 
 .discount-row {
   color: #999;

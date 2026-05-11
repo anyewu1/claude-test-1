@@ -29,9 +29,12 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/products/**",
                         "/api/categories/**",
                         "/api/reviews/**",
+                        "/api/coupons/validate",
                         "/api/ai/suggest",
                         "/api/ai/chat",
                         "/api/ai/recommend",
+                        "/api/ai/semantic-search",
+                        "/api/ai/embedding-status",
                         "/h2-console/**"
                 );
     }

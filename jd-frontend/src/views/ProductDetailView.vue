@@ -204,6 +204,7 @@ import { ElMessage } from 'element-plus'
 import ProductCard from '@/components/ProductCard.vue'
 import { productApi } from '@/api/product'
 import { reviewApi } from '@/api/review'
+import { historyApi } from '@/api/history'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
 
@@ -247,6 +248,8 @@ async function loadProduct() {
     product.value = res.data
     currentImgIdx.value = 0
     reviewPage.value = 1
+    // Track browse history (fire and forget)
+    historyApi.record(res.data.id).catch(() => {})
 
     const [recRes] = await Promise.all([
       productApi.recommend({ productId: res.data.id, limit: 4 }),

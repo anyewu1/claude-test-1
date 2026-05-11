@@ -14,6 +14,7 @@ const routes = [
   { path: '/register', component: () => import('@/views/RegisterView.vue') },
   { path: '/profile', component: () => import('@/views/UserProfileView.vue'), meta: { requiresAuth: true } },
   { path: '/favorites', component: () => import('@/views/FavoritesView.vue'), meta: { requiresAuth: true } },
+  { path: '/admin', component: () => import('@/views/AdminView.vue'), meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFoundView.vue') }
 ]
 
@@ -24,11 +25,12 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (to.meta.requiresAuth) {
-    const userStore = useUserStore()
-    if (!userStore.isLoggedIn) {
-      return { path: '/login', query: { redirect: to.fullPath } }
-    }
+  const userStore = useUserStore()
+  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.requiresAdmin && !userStore.isAdmin) {
+    return { path: '/' }
   }
 })
 

@@ -33,6 +33,22 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateToken(Long userId, String username, String role) {
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim("username", username)
+                .claim("role", role)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getKey())
+                .compact();
+    }
+
+    public String getRole(String token) {
+        Object role = parseToken(token).get("role");
+        return role != null ? role.toString() : "USER";
+    }
+
     public Claims parseToken(String token) {
         return Jwts.parser()
                 .verifyWith(getKey())

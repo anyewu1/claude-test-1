@@ -21,6 +21,9 @@
           <el-button v-if="order.status === 1 || order.status === 2" type="success" @click="confirmOrder" :loading="actionLoading">
             确认收货
           </el-button>
+          <el-button v-if="order.status === 3" type="warning" @click="requestRefund" :loading="actionLoading">
+            申请退款
+          </el-button>
         </div>
       </div>
 
@@ -103,8 +106,8 @@ const stepActive = computed(() => {
   return 0
 })
 
-const statusText = computed(() => ['待付款', '待发货', '待收货', '已完成', '已取消'][order.value?.status] || '')
-const statusIcon = computed(() => ['⏳', '📦', '🚚', '✅', '❌'][order.value?.status] || '')
+const statusText = computed(() => ['待付款', '待发货', '待收货', '已完成', '已取消', '退款中'][order.value?.status] || '')
+const statusIcon = computed(() => ['⏳', '📦', '🚚', '✅', '❌', '🔄'][order.value?.status] || '')
 const statusDesc = computed(() => {
   const s = order.value?.status
   if (s === 0) return '请在24小时内完成付款，超时订单将自动取消'
@@ -112,6 +115,7 @@ const statusDesc = computed(() => {
   if (s === 2) return '商品已发出，请耐心等待'
   if (s === 3) return '感谢您的购买，欢迎再次光临！'
   if (s === 4) return '订单已取消'
+  if (s === 5) return '退款申请已提交，预计1-3个工作日处理'
   return ''
 })
 
@@ -156,6 +160,18 @@ async function confirmOrder() {
   try {
     await orderApi.confirm(order.value.id)
     ElMessage.success('确认收货成功！')
+    loadOrder()
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+async function requestRefund() {
+  await ElMessageBox.confirm('确认申请退款？退款将在1-3个工作日内处理。', '申请退款', { type: 'warning' })
+  actionLoading.value = true
+  try {
+    await orderApi.refund(order.value.id)
+    ElMessage.success('退款申请已提交')
     loadOrder()
   } finally {
     actionLoading.value = false

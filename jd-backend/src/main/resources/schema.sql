@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS product_embeddings;
+DROP TABLE IF EXISTS browse_history;
+DROP TABLE IF EXISTS coupons;
 DROP TABLE IF EXISTS favorites;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS order_items;
@@ -110,4 +113,31 @@ CREATE TABLE favorites (
     product_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_user_product UNIQUE (user_id, product_id)
+);
+
+CREATE TABLE coupons (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    type VARCHAR(20) NOT NULL,
+    value DECIMAL(10,2) NOT NULL,
+    min_order DECIMAL(10,2) DEFAULT 0,
+    max_uses INT DEFAULT 100,
+    used_count INT DEFAULT 0,
+    valid_from TIMESTAMP,
+    valid_to TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE browse_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE product_embeddings (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT NOT NULL UNIQUE,
+    embedding TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

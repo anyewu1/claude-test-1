@@ -86,3 +86,13 @@ INSERT INTO products (name, description, price, original_price, stock, sales, ca
 INSERT INTO addresses (user_id, name, phone, province, city, district, detail, is_default) VALUES
 (2, '张三', '13800138000', '广东省', '深圳市', '南山区', '科技园南区8栋101室', TRUE),
 (2, '李四', '13900139000', '上海市', '上海市', '浦东新区', '陆家嘴金融城1号楼', FALSE);
+
+-- Sample reviews
+INSERT INTO reviews (product_id, user_id, rating, content) VALUES
+(1, 2, 5, '商品质量非常好，物流很快，第二天就到了，包装也很完整，非常满意！'),
+(1, 1, 4, '整体体验不错，性能强劲，就是价格有点贵，但京东正品有保障。'),
+(2, 2, 5, '买了很久了，一直用得很好，强烈推荐！售后服务也很贴心。'),
+(2, 1, 4, '粉色颜值很高，Dynamic Island用起来很顺手。'),
+(3, 2, 5, '苹果Watch Ultra太棒了，续航比普通Watch强多了，很值！'),
+(4, 1, 5, 'AirPods Pro降噪效果绝了，通勤必备，强烈推荐！'),
+(5, 2, 4, 'MacBook Air M3性能超强，轻薄便携，就是价格贵一点。');

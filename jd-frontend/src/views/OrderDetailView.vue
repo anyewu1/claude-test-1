@@ -18,7 +18,7 @@
           <el-button v-if="order.status === 0" @click="cancelOrder" :loading="actionLoading">
             取消订单
           </el-button>
-          <el-button v-if="order.status === 2" type="success" @click="confirmOrder" :loading="actionLoading">
+          <el-button v-if="order.status === 1 || order.status === 2" type="success" @click="confirmOrder" :loading="actionLoading">
             确认收货
           </el-button>
         </div>

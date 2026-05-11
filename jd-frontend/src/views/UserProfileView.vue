@@ -20,6 +20,9 @@
           <el-menu-item index="addresses">
             <el-icon><Location /></el-icon> 收货地址
           </el-menu-item>
+          <el-menu-item index="favorites" @click="$router.push('/favorites')">
+            <el-icon><Star /></el-icon> 我的收藏
+          </el-menu-item>
         </el-menu>
       </aside>
 

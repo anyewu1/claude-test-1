@@ -146,7 +146,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     public void confirmOrder(Long userId, Long orderId) {
         Order order = getOrderDetail(userId, orderId);
-        if (order.getStatus() != 2) throw new RuntimeException("订单状态不正确");
+        if (order.getStatus() != 1 && order.getStatus() != 2) throw new RuntimeException("订单状态不正确");
         order.setStatus(3);
         order.setCompletedAt(LocalDateTime.now());
         updateById(order);

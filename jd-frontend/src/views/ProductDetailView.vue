@@ -118,23 +118,68 @@
             </div>
           </el-tab-pane>
           <el-tab-pane label="用户评价" name="reviews">
-            <div class="reviews-placeholder">
-              <el-rate :model-value="product.rating" disabled show-score size="large" />
-              <p style="color:#999;margin-top:12px">
-                共 {{ product.ratingCount?.toLocaleString() }} 条评价，
-                好评率 {{ Math.floor(product.rating / 5 * 100) }}%
-              </p>
+            <div class="reviews-section" v-loading="reviewLoading">
+              <!-- Summary -->
+              <div class="review-summary">
+                <el-rate :model-value="product.rating" disabled show-score size="large" />
+                <span class="review-summary-text">
+                  共 {{ product.ratingCount?.toLocaleString() }} 条评价，
+                  好评率 {{ Math.floor(product.rating / 5 * 100) }}%
+                </span>
+              </div>
               <el-divider />
-              <div class="mock-review" v-for="r in mockReviews" :key="r.user">
+
+              <!-- Write review -->
+              <div v-if="userStore.isLoggedIn" class="write-review">
+                <div class="write-review-title">写评价</div>
+                <div class="write-review-rating">
+                  <span>评分：</span>
+                  <el-rate v-model="newReview.rating" />
+                </div>
+                <el-input
+                  v-model="newReview.content"
+                  type="textarea"
+                  :rows="3"
+                  placeholder="分享您的使用体验..."
+                  maxlength="500"
+                  show-word-limit
+                />
+                <el-button
+                  type="primary"
+                  @click="submitReview"
+                  :loading="submittingReview"
+                  style="margin-top: 12px"
+                >提交评价</el-button>
+              </div>
+              <div v-else class="login-to-review">
+                <el-button link type="primary" @click="router.push('/login')">登录</el-button>
+                后可发表评价
+              </div>
+              <el-divider />
+
+              <!-- Review list -->
+              <el-empty v-if="reviews.length === 0 && !reviewLoading" description="暂无评价" />
+              <div class="review-item" v-for="r in reviews" :key="r.id">
                 <div class="review-header">
-                  <div class="reviewer-av">{{ r.user.charAt(0) }}</div>
+                  <div class="reviewer-av">{{ r.username?.charAt(0)?.toUpperCase() }}</div>
                   <div>
-                    <div class="reviewer-name">{{ r.user }}</div>
+                    <div class="reviewer-name">{{ r.username }}</div>
                     <el-rate :model-value="r.rating" disabled size="small" />
                   </div>
-                  <span class="review-date">{{ r.date }}</span>
+                  <span class="review-date">{{ new Date(r.createdAt).toLocaleDateString('zh-CN') }}</span>
                 </div>
-                <p class="review-text">{{ r.text }}</p>
+                <p class="review-text">{{ r.content }}</p>
+              </div>
+
+              <!-- Pagination -->
+              <div v-if="reviewTotal > 10" class="review-pagination">
+                <el-pagination
+                  v-model:current-page="reviewPage"
+                  :page-size="10"
+                  :total="reviewTotal"
+                  layout="prev, pager, next"
+                  @current-change="loadReviews"
+                />
               </div>
             </div>
           </el-tab-pane>
@@ -155,8 +200,10 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import ProductCard from '@/components/ProductCard.vue'
 import { productApi } from '@/api/product'
+import { reviewApi } from '@/api/review'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
 
@@ -173,6 +220,13 @@ const quantity = ref(1)
 const activeTab = ref('description')
 const recommendations = ref([])
 
+const reviews = ref([])
+const reviewTotal = ref(0)
+const reviewPage = ref(1)
+const reviewLoading = ref(false)
+const submittingReview = ref(false)
+const newReview = ref({ rating: 5, content: '' })
+
 const currentImage = computed(() => {
   const imgs = product.value?.imageList || []
   return imgs[currentImgIdx.value] || product.value?.coverImage || ''
@@ -183,12 +237,6 @@ const discount = computed(() => {
   return (product.value.price / product.value.originalPrice * 10).toFixed(1)
 })
 
-const mockReviews = [
-  { user: '王**', rating: 5, date: '2024-03-15', text: '商品质量非常好，物流很快，第二天就到了，包装也很完整，非常满意！' },
-  { user: '李**', rating: 4, date: '2024-03-10', text: '整体体验不错，性能强劲，就是价格有点贵，但京东正品有保障。' },
-  { user: '张**', rating: 5, date: '2024-03-08', text: '买了很久了，一直用得很好，强烈推荐！售后服务也很贴心。' }
-]
-
 onMounted(() => loadProduct())
 watch(() => route.params.id, loadProduct)
 
@@ -198,11 +246,41 @@ async function loadProduct() {
     const res = await productApi.detail(route.params.id)
     product.value = res.data
     currentImgIdx.value = 0
+    reviewPage.value = 1
 
-    const recRes = await productApi.recommend({ productId: res.data.id, limit: 4 })
+    const [recRes] = await Promise.all([
+      productApi.recommend({ productId: res.data.id, limit: 4 }),
+      loadReviews()
+    ])
     recommendations.value = recRes.data
   } finally {
     loading.value = false
+  }
+}
+
+async function loadReviews() {
+  reviewLoading.value = true
+  try {
+    const res = await reviewApi.listByProduct(route.params.id, { page: reviewPage.value, size: 10 })
+    reviews.value = res.data.records
+    reviewTotal.value = res.data.total
+  } finally {
+    reviewLoading.value = false
+  }
+}
+
+async function submitReview() {
+  if (!userStore.isLoggedIn) { router.push('/login'); return }
+  if (!newReview.value.content.trim()) { ElMessage.warning('请填写评价内容'); return }
+  submittingReview.value = true
+  try {
+    await reviewApi.addReview(product.value.id, newReview.value)
+    ElMessage.success('评价提交成功')
+    newReview.value = { rating: 5, content: '' }
+    reviewPage.value = 1
+    await loadReviews()
+  } finally {
+    submittingReview.value = false
   }
 }
 
@@ -414,15 +492,51 @@ async function buyNow() {
   line-height: 2;
 }
 
-.reviews-placeholder {
-  padding: 20px 0;
+.reviews-section { padding: 20px 0; }
+
+.review-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.mock-review {
+.review-summary-text { color: #999; font-size: 14px; }
+
+.write-review {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.write-review-title {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.write-review-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-to-review {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 16px;
+}
+
+.review-item {
   margin-bottom: 20px;
   padding-bottom: 20px;
   border-bottom: 1px solid #f0f0f0;
 }
+
+.review-pagination { display: flex; justify-content: center; margin-top: 20px; }
 
 .review-header {
   display: flex;

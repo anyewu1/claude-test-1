@@ -4,6 +4,14 @@
       <img :src="product.coverImage" :alt="product.name" class="card-img" loading="lazy" />
       <span v-if="product.isFlashSale" class="badge flash-badge">闪购</span>
       <span v-if="discount" class="badge discount-badge">{{ discount }}折</span>
+      <button
+        class="fav-btn"
+        :class="{ 'fav-active': isFavorited }"
+        @click.stop="toggleFavorite"
+        :title="isFavorited ? '取消收藏' : '加入收藏'"
+      >
+        <el-icon><StarFilled v-if="isFavorited" /><Star v-else /></el-icon>
+      </button>
     </div>
     <div class="card-body">
       <div class="card-price">
@@ -39,6 +47,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
+import { useFavoriteStore } from '@/stores/favoriteStore'
 
 const props = defineProps({
   product: { type: Object, required: true }
@@ -47,7 +56,15 @@ const props = defineProps({
 const router = useRouter()
 const cartStore = useCartStore()
 const userStore = useUserStore()
+const favoriteStore = useFavoriteStore()
 const adding = ref(false)
+
+const isFavorited = computed(() => favoriteStore.isFavorited(props.product.id))
+
+async function toggleFavorite() {
+  if (!userStore.isLoggedIn) { router.push('/login'); return }
+  await favoriteStore.toggle(props.product.id)
+}
 
 const discount = computed(() => {
   if (!props.product.originalPrice || props.product.originalPrice <= props.product.price) return null
@@ -133,6 +150,38 @@ function formatSales(n) {
   color: #fff;
   left: auto;
   right: 8px;
+}
+
+.fav-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #ccc;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.product-card:hover .fav-btn {
+  opacity: 1;
+}
+
+.fav-btn.fav-active {
+  opacity: 1;
+  color: var(--jd-red);
+}
+
+.fav-btn:hover {
+  color: var(--jd-red);
 }
 
 .card-body {

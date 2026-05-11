@@ -10,15 +10,26 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import AIChat from '@/components/AIChat.vue'
+import { useUserStore } from '@/stores/userStore'
+import { useFavoriteStore } from '@/stores/favoriteStore'
 
 const route = useRoute()
+const userStore = useUserStore()
+const favoriteStore = useFavoriteStore()
+
 const noHeaderRoutes = ['/login', '/register']
 const showHeader = computed(() => !noHeaderRoutes.includes(route.path))
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    favoriteStore.fetchFavorites()
+  }
+})
 </script>
 
 <style>

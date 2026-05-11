@@ -12,7 +12,9 @@ const routes = [
   { path: '/orders/:id', component: () => import('@/views/OrderDetailView.vue'), meta: { requiresAuth: true } },
   { path: '/login', component: () => import('@/views/LoginView.vue') },
   { path: '/register', component: () => import('@/views/RegisterView.vue') },
-  { path: '/profile', component: () => import('@/views/UserProfileView.vue'), meta: { requiresAuth: true } }
+  { path: '/profile', component: () => import('@/views/UserProfileView.vue'), meta: { requiresAuth: true } },
+  { path: '/favorites', component: () => import('@/views/FavoritesView.vue'), meta: { requiresAuth: true } },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFoundView.vue') }
 ]
 
 const router = createRouter({

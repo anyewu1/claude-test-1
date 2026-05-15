@@ -1,0 +1,60 @@
+<view class="page">
+  <!-- 搜索框 -->
+  <view class="search-box">
+    <view class="search-icon">🔍</view>
+    <input
+      class="search-input"
+      placeholder="搜索书名或作者"
+      value="{{ keyword }}"
+      bindinput="onSearchInput"
+    />
+  </view>
+
+  <!-- 筛选 -->
+  <view class="tabs">
+    <view
+      class="tab {{ filter === 'all' ? 'active' : '' }}"
+      bindtap="setFilter"
+      data-val="all"
+    >全部 ({{ stats.total }})</view>
+    <view
+      class="tab {{ filter === 'borrowed' ? 'active' : '' }}"
+      bindtap="setFilter"
+      data-val="borrowed"
+    >借阅中 ({{ stats.borrowed }})</view>
+    <view
+      class="tab {{ filter === 'returned' ? 'active' : '' }}"
+      bindtap="setFilter"
+      data-val="returned"
+    >已归还 ({{ stats.returned }})</view>
+  </view>
+
+  <!-- 图书列表 -->
+  <view class="book-list">
+    <view
+      class="book-item"
+      wx:for="{{ filteredBooks }}"
+      wx:key="id"
+      bindtap="viewDetail"
+      data-id="{{ item.id }}"
+    >
+      <view class="book-cover">{{ item.cover }}</view>
+      <view class="book-info">
+        <view class="book-title">{{ item.title }}</view>
+        <view class="book-author">{{ item.author }}</view>
+        <view class="book-pub">{{ item.publisher }}</view>
+        <view class="book-status">
+          <text class="status-tag {{ item.status === 'borrowed' ? 'borrowed' : 'returned' }}">
+            {{ item.status === 'borrowed' ? '借阅中' : '已归还' }}
+          </text>
+          <text class="return-date" wx:if="{{ item.status === 'borrowed' }}">应还: {{ item.returnDate }}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{ filteredBooks.length === 0 }}" class="empty">
+    <view class="empty-icon">📚</view>
+    <view class="empty-text">未找到相关图书</view>
+  </view>
+</view>

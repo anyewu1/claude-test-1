@@ -1,0 +1,75 @@
+<view class="page">
+  <!-- 签到头部 -->
+  <view class="header">
+    <view class="streak">{{ streak }}</view>
+    <view class="streak-label">连续签到天数</view>
+    <button
+      class="checkin-btn {{ checkedToday ? 'checked' : '' }}"
+      bindtap="doCheckin"
+      disabled="{{ checkedToday }}"
+    >
+      {{ checkedToday ? '今日已签到 ✓' : '立即签到' }}
+    </button>
+    <view class="checkin-tip">{{ today }}</view>
+  </view>
+
+  <!-- 签到日历 -->
+  <view class="card">
+    <view class="card-title">签到日历 (本月)</view>
+    <view class="week-header">
+      <view class="week-day" wx:for="{{ weekDays }}" wx:key="*this">{{ item }}</view>
+    </view>
+    <view class="date-grid">
+      <view
+        class="date-cell {{ item.isChecked ? 'checked' : '' }} {{ item.isToday ? 'today' : '' }} {{ item.isFuture ? 'future' : '' }}"
+        wx:for="{{ dates }}"
+        wx:key="key"
+      >
+        <view class="date-num">{{ item.day || '' }}</view>
+        <view wx:if="{{ item.isChecked }}" class="check-mark">✓</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 签到奖励 -->
+  <view class="card">
+    <view class="card-title">签到奖励</view>
+    <view class="reward-list">
+      <view class="reward-item {{ streak >= 3 ? 'unlocked' : '' }}">
+        <view class="reward-day">3 天</view>
+        <view class="reward-text">+ 10 积分</view>
+      </view>
+      <view class="reward-item {{ streak >= 7 ? 'unlocked' : '' }}">
+        <view class="reward-day">7 天</view>
+        <view class="reward-text">+ 30 积分</view>
+      </view>
+      <view class="reward-item {{ streak >= 15 ? 'unlocked' : '' }}">
+        <view class="reward-day">15 天</view>
+        <view class="reward-text">+ 100 积分</view>
+      </view>
+      <view class="reward-item {{ streak >= 30 ? 'unlocked' : '' }}">
+        <view class="reward-day">30 天</view>
+        <view class="reward-text">+ 300 积分</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 统计 -->
+  <view class="card">
+    <view class="card-title">本月数据</view>
+    <view class="stats">
+      <view class="stat-item">
+        <view class="stat-num">{{ monthCheckin }}</view>
+        <view class="stat-label">本月签到</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-num">{{ totalCheckin }}</view>
+        <view class="stat-label">累计签到</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-num">{{ streak }}</view>
+        <view class="stat-label">最长连续</view>
+      </view>
+    </view>
+  </view>
+</view>

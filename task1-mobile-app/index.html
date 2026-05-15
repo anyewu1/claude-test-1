@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>账号密码登录</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f5f5; color: #000; }
+#app { max-width: 414px; min-height: 100vh; margin: 0 auto; background: #fff; position: relative; padding-bottom: 120px; }
+
+/* 状态栏 (简化版: 时间 + 电池) */
+.status-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px 4px; font-size: 16px; font-weight: 600; color: #000; }
+.battery { display: inline-flex; align-items: center; border: 1.2px solid #000; border-radius: 4px; padding: 2px 5px; font-size: 11px; font-weight: 700; position: relative; line-height: 1; }
+.battery::after { content: ''; width: 2px; height: 5px; background: #000; position: absolute; right: -3px; top: 50%; transform: translateY(-50%); border-radius: 0 1px 1px 0; }
+
+/* 导航栏 */
+.nav-bar { display: flex; align-items: center; padding: 8px 20px; height: 50px; position: relative; }
+.nav-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: -4px; }
+.nav-back svg { width: 22px; height: 22px; }
+.nav-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 19px; font-weight: 600; color: #000; letter-spacing: 0.5px; }
+
+/* 表单 */
+.form { padding: 60px 32px 0; }
+.form-item { display: flex; align-items: center; padding: 22px 0; border-bottom: 1px solid #eee; }
+.form-label { width: 64px; font-size: 16px; color: #000; font-weight: 400; letter-spacing: 1px; }
+.form-input { flex: 1; border: none; outline: none; font-size: 15px; color: #333; background: transparent; font-family: inherit; }
+.form-input::placeholder { color: #c8c8c8; font-weight: 400; }
+.forgot { color: #ffa3b8; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: 500; }
+
+/* 登录按钮 */
+.btn-login { display: block; width: calc(100% - 64px); margin: 50px 32px 22px; height: 52px; border: none; border-radius: 30px; background: #ffc1cc; color: #fff; font-size: 19px; cursor: pointer; transition: background .2s; font-weight: 400; letter-spacing: 4px; font-family: inherit; }
+.btn-login.active { background: linear-gradient(90deg, #ff7a99, #ff9eb5); }
+
+/* 短信登录 */
+.sms-link { text-align: center; font-size: 15px; color: #555; cursor: pointer; padding: 8px 0; font-weight: 400; }
+
+/* 底部协议 */
+.footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 32px 24px; }
+.agree { display: flex; align-items: flex-start; font-size: 12px; color: #888; line-height: 1.7; }
+.checkbox { width: 14px; height: 14px; border: 1.3px solid #c8c8c8; border-radius: 50%; margin-right: 8px; margin-top: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fff; }
+.checkbox.checked { background: #ff6b89; border-color: #ff6b89; }
+.checkbox.checked::after { content: ''; width: 6px; height: 3px; border-left: 1.3px solid #fff; border-bottom: 1.3px solid #fff; transform: rotate(-45deg) translateY(-1px); }
+.agree-text { flex: 1; }
+.agree-text a { color: #3f8fd3; text-decoration: none; cursor: pointer; }
+.help { text-align: center; color: #b5b5b5; font-size: 13px; margin-top: 18px; cursor: pointer; font-weight: 400; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 状态栏 (时间 + 电池) -->
+  <div class="status-bar">
+    <span>{{ time }}</span>
+    <span class="battery">74</span>
+  </div>
+
+  <!-- 导航栏 -->
+  <div class="nav-bar">
+    <div class="nav-back" @click="goBack">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="nav-title">账号密码登录</div>
+  </div>
+
+  <!-- 表单 -->
+  <div class="form">
+    <div class="form-item">
+      <span class="form-label">账号</span>
+      <input class="form-input" type="text" v-model="account" placeholder="请输入手机号或邮箱">
+    </div>
+    <div class="form-item">
+      <span class="form-label">密码</span>
+      <input class="form-input" type="password" v-model="password" placeholder="请输入密码">
+      <span class="forgot" @click="onForgot">忘记密码</span>
+    </div>
+  </div>
+
+  <!-- 登录按钮 -->
+  <button class="btn-login" :class="{ active: canLogin }" @click="onLogin">登录</button>
+
+  <!-- 短信登录 -->
+  <div class="sms-link" @click="onSmsLogin">手机短信登录 ›</div>
+
+  <!-- 底部协议 -->
+  <div class="footer">
+    <div class="agree">
+      <span class="checkbox" :class="{ checked: agreed }" @click="agreed = !agreed"></span>
+      <span class="agree-text">我已阅读并同意<a @click="showTip('用户协议')">用户协议</a>、<a @click="showTip('隐私政策')">隐私政策</a>,未注册绑定的手机号验证成功后将自动注册</span>
+    </div>
+    <div class="help" @click="showTip('请联系客服: 400-888-8888')">登录遇到问题</div>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, computed } = Vue;
+createApp({
+  setup() {
+    const account = ref('');
+    const password = ref('');
+    const agreed = ref(false);
+    const time = ref('14:57');
+
+    const canLogin = computed(() => agreed.value && account.value && password.value);
+
+    const onLogin = () => {
+      if (!account.value || !password.value) { alert('请输入账号和密码'); return; }
+      if (!agreed.value) { alert('请先阅读并同意用户协议、隐私政策'); return; }
+      alert('登录成功!欢迎使用~');
+    };
+    const onForgot = () => alert('请前往找回密码页面');
+    const onSmsLogin = () => alert('切换至短信登录');
+    const goBack = () => alert('返回上一页');
+    const showTip = (t) => alert(t);
+
+    return { account, password, agreed, time, canLogin, onLogin, onForgot, onSmsLogin, goBack, showTip };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>

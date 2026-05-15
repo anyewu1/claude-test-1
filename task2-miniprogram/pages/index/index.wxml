@@ -1,0 +1,95 @@
+<view class="page">
+  <!-- 顶部欢迎卡片 -->
+  <view class="welcome">
+    <view class="welcome-text">
+      <view class="hello">你好,{{ studentInfo.name }} 👋</view>
+      <view class="sub">{{ today }} · {{ weekDay }} · 第 {{ weekNum }} 周</view>
+    </view>
+    <image class="avatar" src="{{ studentInfo.avatar }}" mode="aspectFill"></image>
+  </view>
+
+  <!-- 数据概览 -->
+  <view class="stats">
+    <view class="stat-item">
+      <view class="stat-num">{{ todayCourseCount }}</view>
+      <view class="stat-label">今日课程</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-num">{{ todoCount }}</view>
+      <view class="stat-label">待办事项</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-num">{{ unreadCount }}</view>
+      <view class="stat-label">未读通知</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-num">{{ borrowCount }}</view>
+      <view class="stat-label">借阅图书</view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="card">
+    <view class="card-title">快捷入口</view>
+    <view class="grid">
+      <view class="grid-item" bindtap="navToGrades">
+        <view class="grid-icon">📊</view>
+        <view class="grid-text">成绩</view>
+      </view>
+      <view class="grid-item" bindtap="navToLibrary">
+        <view class="grid-icon">📚</view>
+        <view class="grid-text">图书馆</view>
+      </view>
+      <view class="grid-item" bindtap="navToCalendar">
+        <view class="grid-icon">📅</view>
+        <view class="grid-text">日程</view>
+      </view>
+      <view class="grid-item" bindtap="navToCheckin">
+        <view class="grid-icon">✅</view>
+        <view class="grid-text">签到</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日课程 -->
+  <view class="card">
+    <view class="flex-between">
+      <view class="card-title">今日课程</view>
+      <view class="link" bindtap="navToSchedule">查看全部 ›</view>
+    </view>
+    <view wx:if="{{ todayCourses.length === 0 }}" class="empty">
+      <view class="empty-icon">🎉</view>
+      <view class="empty-text">今天没有课程,好好休息吧</view>
+    </view>
+    <view wx:else>
+      <view class="course-item" wx:for="{{ todayCourses }}" wx:key="id" style="border-left-color: {{ item.color }}">
+        <view class="course-time">第{{ item.period }}节</view>
+        <view class="course-info">
+          <view class="course-name">{{ item.name }}</view>
+          <view class="course-meta">{{ item.teacher }} · {{ item.location }}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待办事项 -->
+  <view class="card">
+    <view class="flex-between">
+      <view class="card-title">待办事项</view>
+      <view class="text-muted" style="font-size: 24rpx;">{{ pendingTodos.length }} 项待完成</view>
+    </view>
+    <view wx:if="{{ pendingTodos.length === 0 }}" class="empty">
+      <view class="empty-icon">🎯</view>
+      <view class="empty-text">暂无待办,加油!</view>
+    </view>
+    <view wx:else>
+      <view class="todo-item" wx:for="{{ pendingTodos }}" wx:key="id">
+        <view class="todo-dot" style="background: {{ item.priority === 'high' ? '#FF4D4F' : item.priority === 'medium' ? '#FAAD14' : '#52C41A' }}"></view>
+        <view class="flex-1">
+          <view class="todo-text">{{ item.text }}</view>
+          <view class="todo-date">截止: {{ item.dueDate }}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

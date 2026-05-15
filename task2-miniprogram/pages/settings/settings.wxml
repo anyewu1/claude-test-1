@@ -1,0 +1,96 @@
+<view class="page">
+  <view class="section-title">外观设置</view>
+  <view class="card">
+    <view class="setting-item">
+      <view class="setting-label">主题模式</view>
+      <view class="setting-value">
+        <view class="radio-group">
+          <view
+            class="radio {{ theme === 'light' ? 'active' : '' }}"
+            bindtap="setTheme"
+            data-val="light"
+          >浅色</view>
+          <view
+            class="radio {{ theme === 'dark' ? 'active' : '' }}"
+            bindtap="setTheme"
+            data-val="dark"
+          >深色</view>
+          <view
+            class="radio {{ theme === 'auto' ? 'active' : '' }}"
+            bindtap="setTheme"
+            data-val="auto"
+          >自动</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="setting-item">
+      <view class="setting-label">字体大小</view>
+      <view class="setting-value">
+        <view class="radio-group">
+          <view
+            class="radio {{ fontSize === 'small' ? 'active' : '' }}"
+            bindtap="setFontSize"
+            data-val="small"
+          >小</view>
+          <view
+            class="radio {{ fontSize === 'medium' ? 'active' : '' }}"
+            bindtap="setFontSize"
+            data-val="medium"
+          >中</view>
+          <view
+            class="radio {{ fontSize === 'large' ? 'active' : '' }}"
+            bindtap="setFontSize"
+            data-val="large"
+          >大</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">通知设置</view>
+  <view class="card">
+    <view class="setting-item">
+      <view class="setting-label">课程提醒</view>
+      <switch checked="{{ notifyClass }}" bindchange="toggleNotifyClass" color="#4A90E2"/>
+    </view>
+    <view class="setting-item">
+      <view class="setting-label">考试提醒</view>
+      <switch checked="{{ notifyExam }}" bindchange="toggleNotifyExam" color="#4A90E2"/>
+    </view>
+    <view class="setting-item">
+      <view class="setting-label">公告推送</view>
+      <switch checked="{{ notifyNotice }}" bindchange="toggleNotifyNotice" color="#4A90E2"/>
+    </view>
+  </view>
+
+  <view class="section-title">数据管理</view>
+  <view class="card">
+    <view class="setting-item action" bindtap="clearCache">
+      <view class="setting-label">清除缓存</view>
+      <view class="setting-value">{{ cacheSize }}</view>
+    </view>
+    <view class="setting-item action" bindtap="resetData">
+      <view class="setting-label">重置数据</view>
+      <view class="setting-value">›</view>
+    </view>
+  </view>
+
+  <view class="section-title">关于</view>
+  <view class="card">
+    <view class="setting-item">
+      <view class="setting-label">版本号</view>
+      <view class="setting-value">v1.0.0</view>
+    </view>
+    <view class="setting-item action" bindtap="showAbout">
+      <view class="setting-label">关于校园助手</view>
+      <view class="setting-value">›</view>
+    </view>
+    <view class="setting-item action" bindtap="showPrivacy">
+      <view class="setting-label">隐私协议</view>
+      <view class="setting-value">›</view>
+    </view>
+  </view>
+
+  <view class="logout-btn" bindtap="logout">退出登录</view>
+</view>

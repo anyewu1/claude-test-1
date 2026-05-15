@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="header">
+    <view class="title">{{ semester }}</view>
+    <view class="sub">第 {{ weekNum }} 周 · 共 {{ courseTotal }} 门课程</view>
+  </view>
+
+  <!-- 课表头 -->
+  <view class="schedule-table">
+    <view class="schedule-header">
+      <view class="time-col">节次</view>
+      <view class="day-col" wx:for="{{ days }}" wx:key="*this">{{ item }}</view>
+    </view>
+
+    <!-- 按节次行渲染 -->
+    <view class="schedule-row" wx:for="{{ grid }}" wx:key="period" wx:for-item="row">
+      <view class="time-col">
+        <view class="period-num">{{ row.label }}</view>
+        <view class="period-time">{{ row.time }}</view>
+      </view>
+      <view
+        class="day-col"
+        wx:for="{{ row.cells }}"
+        wx:key="day"
+        wx:for-item="cell"
+      >
+        <view
+          wx:if="{{ cell }}"
+          class="course-cell"
+          style="background: {{ cell.color }}"
+          bindtap="onCourseClick"
+          data-id="{{ cell.id }}"
+        >
+          <view class="course-name-cell">{{ cell.name }}</view>
+          <view class="course-loc">{{ cell.location }}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="tip">点击课程可查看详情</view>
+</view>

@@ -1,0 +1,38 @@
+<view class="page">
+  <view wx:if="{{ book }}">
+    <!-- 图书头部 -->
+    <view class="header">
+      <view class="cover">{{ book.cover }}</view>
+      <view class="info">
+        <view class="title">{{ book.title }}</view>
+        <view class="author">作者: {{ book.author }}</view>
+        <view class="pub">{{ book.publisher }}</view>
+        <view class="status-row">
+          <text class="status-tag {{ book.status === 'borrowed' ? 'borrowed' : 'returned' }}">
+            {{ book.status === 'borrowed' ? '借阅中' : '已归还' }}
+          </text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 详细信息 -->
+    <view class="card">
+      <view class="card-title">借阅信息</view>
+      <view class="row"><text class="label">借阅日期</text><text class="value">{{ book.borrowDate }}</text></view>
+      <view class="row"><text class="label">应还日期</text><text class="value">{{ book.returnDate }}</text></view>
+      <view class="row"><text class="label">ISBN</text><text class="value">{{ book.isbn }}</text></view>
+      <view class="row"><text class="label">状态</text><text class="value">{{ book.status === 'borrowed' ? '在借' : '已还' }}</text></view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">内容简介</view>
+      <view class="summary">{{ book.summary }}</view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="actions" wx:if="{{ book.status === 'borrowed' }}">
+      <button class="btn-renew" bindtap="onRenew">续 借</button>
+      <button class="btn-return" bindtap="onReturn">归 还</button>
+    </view>
+  </view>
+</view>

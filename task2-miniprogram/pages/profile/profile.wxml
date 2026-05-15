@@ -1,0 +1,71 @@
+<view class="page">
+  <!-- 个人信息卡片 -->
+  <view class="profile-card">
+    <image class="avatar" src="{{ studentInfo.avatar }}" mode="aspectFill"></image>
+    <view class="info">
+      <view class="name">{{ studentInfo.name }}</view>
+      <view class="id">学号: {{ studentInfo.studentId }}</view>
+      <view class="class">{{ studentInfo.college }} · {{ studentInfo.class }}</view>
+    </view>
+  </view>
+
+  <!-- 数据概览 -->
+  <view class="stats-row">
+    <view class="stat">
+      <view class="stat-num">{{ checkinDays }}</view>
+      <view class="stat-label">签到天数</view>
+    </view>
+    <view class="stat">
+      <view class="stat-num">{{ borrowCount }}</view>
+      <view class="stat-label">借阅图书</view>
+    </view>
+    <view class="stat">
+      <view class="stat-num">{{ gpa }}</view>
+      <view class="stat-label">总 GPA</view>
+    </view>
+  </view>
+
+  <!-- 菜单列表 -->
+  <view class="menu">
+    <view class="menu-item" bindtap="navTo" data-url="/pages/grades/grades">
+      <view class="menu-icon">📊</view>
+      <view class="menu-text">我的成绩</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="navTo" data-url="/pages/library/library">
+      <view class="menu-icon">📚</view>
+      <view class="menu-text">借阅记录</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="navTo" data-url="/pages/calendar/calendar">
+      <view class="menu-icon">📅</view>
+      <view class="menu-text">我的日程</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="navTo" data-url="/pages/checkin/checkin">
+      <view class="menu-icon">✅</view>
+      <view class="menu-text">签到中心</view>
+      <view class="menu-arrow">›</view>
+    </view>
+  </view>
+
+  <view class="menu">
+    <view class="menu-item" bindtap="showInfo" data-info="联系教务处: 0571-12345678">
+      <view class="menu-icon">📞</view>
+      <view class="menu-text">联系教务</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="showInfo" data-info="意见反馈邮箱: feedback@campus.edu">
+      <view class="menu-icon">💬</view>
+      <view class="menu-text">意见反馈</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="navTo" data-url="/pages/settings/settings">
+      <view class="menu-icon">⚙️</view>
+      <view class="menu-text">设置</view>
+      <view class="menu-arrow">›</view>
+    </view>
+  </view>
+
+  <view class="footer-tip">校园助手 v1.0.0</view>
+</view>

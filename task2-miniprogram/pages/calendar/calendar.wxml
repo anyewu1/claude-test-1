@@ -1,0 +1,56 @@
+<view class="page">
+  <!-- 月份标题 -->
+  <view class="month-bar">
+    <view class="arrow" bindtap="prevMonth">‹</view>
+    <view class="month-text">{{ year }} 年 {{ month }} 月</view>
+    <view class="arrow" bindtap="nextMonth">›</view>
+  </view>
+
+  <!-- 星期标题 -->
+  <view class="week-header">
+    <view class="week-day" wx:for="{{ weekDays }}" wx:key="*this">{{ item }}</view>
+  </view>
+
+  <!-- 日期网格 -->
+  <view class="date-grid">
+    <view
+      class="date-cell {{ item.isToday ? 'today' : '' }} {{ item.isCurrentMonth ? '' : 'other-month' }} {{ item.hasEvent ? 'has-event' : '' }} {{ item.isSelected ? 'selected' : '' }}"
+      wx:for="{{ dates }}"
+      wx:key="key"
+      bindtap="selectDate"
+      data-key="{{ item.key }}"
+    >
+      <view class="date-num">{{ item.day }}</view>
+      <view wx:if="{{ item.hasEvent }}" class="event-dot"></view>
+    </view>
+  </view>
+
+  <!-- 当日事件 -->
+  <view class="card">
+    <view class="card-title">{{ selectedDate }} 的日程</view>
+    <view wx:if="{{ selectedEvents.length === 0 }}" class="empty">
+      <view class="empty-icon">🗓️</view>
+      <view class="empty-text">该日无事件</view>
+    </view>
+    <view wx:else>
+      <view class="event-item" wx:for="{{ selectedEvents }}" wx:key="id">
+        <view class="event-tag type-{{ item.type }}">
+          {{ item.type === 'exam' ? '考试' : item.type === 'class' ? '课程' : item.type === 'activity' ? '活动' : '重要' }}
+        </view>
+        <view class="event-title">{{ item.title }}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 全部事件 -->
+  <view class="card">
+    <view class="card-title">近期日程</view>
+    <view class="event-item" wx:for="{{ allEvents }}" wx:key="id">
+      <view class="event-date">{{ item.date }}</view>
+      <view class="event-tag type-{{ item.type }}">
+        {{ item.type === 'exam' ? '考试' : item.type === 'class' ? '课程' : item.type === 'activity' ? '活动' : '重要' }}
+      </view>
+      <view class="event-title flex-1">{{ item.title }}</view>
+    </view>
+  </view>
+</view>

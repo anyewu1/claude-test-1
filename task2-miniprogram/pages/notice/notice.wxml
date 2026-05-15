@@ -1,0 +1,47 @@
+<view class="page">
+  <view class="tabs">
+    <view
+      class="tab {{ filter === 'all' ? 'active' : '' }}"
+      bindtap="setFilter"
+      data-val="all"
+    >全部</view>
+    <view
+      class="tab {{ filter === 'unread' ? 'active' : '' }}"
+      bindtap="setFilter"
+      data-val="unread"
+    >未读 ({{ unreadCount }})</view>
+    <view
+      class="tab {{ filter === 'important' ? 'active' : '' }}"
+      bindtap="setFilter"
+      data-val="important"
+    >重要</view>
+  </view>
+
+  <view class="notice-list">
+    <view
+      class="notice-item {{ !item.read ? 'unread' : '' }}"
+      wx:for="{{ filteredNotices }}"
+      wx:key="id"
+      bindtap="viewNotice"
+      data-id="{{ item.id }}"
+    >
+      <view class="notice-header">
+        <view class="notice-type type-{{ item.type }}">
+          {{ item.type === 'important' ? '重要' : item.type === 'activity' ? '活动' : '普通' }}
+        </view>
+        <view class="notice-title">{{ item.title }}</view>
+        <view wx:if="{{ !item.read }}" class="unread-dot"></view>
+      </view>
+      <view class="notice-content">{{ item.content }}</view>
+      <view class="notice-footer">
+        <text class="author">{{ item.author }}</text>
+        <text class="date">{{ item.date }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{ filteredNotices.length === 0 }}" class="empty">
+    <view class="empty-icon">📭</view>
+    <view class="empty-text">暂无通知</view>
+  </view>
+</view>
